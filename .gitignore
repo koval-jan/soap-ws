@@ -45,6 +45,15 @@ classes
 .classpath
 .project
 .idea
+bin/
+classes/
+build/
+.metadata/
+.settings/
+.classpath
+*.class
+target
+.recommenders
 
 src/site/markdown/*.*
 .DS_Store
