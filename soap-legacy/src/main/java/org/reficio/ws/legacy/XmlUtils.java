@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -425,25 +426,54 @@ final class XmlUtils {
         return buf.toString();
     }
 
+    public static XmlObject[] selectXPath(XmlObject xmlObject, String xpath) {
+    	 String namespaces = declareXPathNamespaces(xmlObject);
+         if (namespaces != null && namespaces.trim().length() > 0)
+             xpath = namespaces + xpath;
+
+         return xmlObject.selectPath(xpath);
+    }
+
+    public static void setXPathContent(XmlObject xmlObject, String xpath, String value) {
+         XmlObject[] path = selectXPath(xmlObject, xpath);
+
+         for (XmlObject xml : path) {
+             setNodeValue(xml.getDomNode(), value);
+         }
+    }
+
+    public static class XPathValue {
+    	String xpath;
+    	String value;
+
+    	public XPathValue(String xpath, String value) {
+			this.xpath = xpath;
+			this.value = value;
+		}
+    }
+
+    public static XmlObject setXPathContent(String xmlText, XPathValue ... xpathValue) {
+    	 try {
+         	XmlObject xmlObject = XmlObject.Factory.parse(xmlText);
+         	for(XPathValue xv : xpathValue) {
+         		setXPathContent(xmlObject, xv.xpath, xv.value);
+         	}
+
+            return xmlObject;
+         } catch (XmlException e) {
+         	log.error("Error setting xpath content", e);
+         	throw new RuntimeException(e);
+         }
+    }
+
     public static String setXPathContent(String xmlText, String xpath, String value) {
         try {
-            XmlObject xmlObject = XmlObject.Factory.parse(xmlText);
-
-            String namespaces = declareXPathNamespaces(xmlObject);
-            if (namespaces != null && namespaces.trim().length() > 0)
-                xpath = namespaces + xpath;
-
-            XmlObject[] path = xmlObject.selectPath(xpath);
-            for (XmlObject xml : path) {
-                setNodeValue(xml.getDomNode(), value);
-            }
-
+        	XmlObject xmlObject = XmlObject.Factory.parse(xmlText);
+            setXPathContent(xmlObject, xpath, value);
             return xmlObject.toString();
-        } catch (Exception e) {
-
-            e.printStackTrace();
+        } catch (XmlException e) {
+        	log.error("Error setting xpath [" + xpath + "] content", e);
         }
-
         return xmlText;
     }
 

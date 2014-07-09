@@ -84,8 +84,8 @@ public class SoapLegacyFacade {
         }
     }
 
-    public String buildFault(String code, String message, Binding binding, SoapContext context) {
-        return messageBuilder.buildFault(code, message, binding, context);
+    public String buildFault(String code, String message, String detail, Binding binding, SoapContext context) {
+        return messageBuilder.buildFault(code, message, detail, binding, context);
     }
 
     public String buildEmptyFault(Binding binding, SoapContext context) {
@@ -124,8 +124,8 @@ public class SoapLegacyFacade {
         return SoapMessageBuilder.buildEmptyFault(soapVersion, context);
     }
 
-    public static String buildFault(String code, String message, SoapVersion soapVersion, SoapContext context) {
-        return SoapMessageBuilder.buildFault(code, message, soapVersion, context);
+    public static String buildFault(String code, String message, String detail, SoapVersion soapVersion, SoapContext context) {
+        return SoapMessageBuilder.buildFault(code, message, detail, soapVersion, context);
     }
 
     private static SoapVersion transformSoapVersion(Soap soapVersion) {
@@ -144,8 +144,8 @@ public class SoapLegacyFacade {
         return SoapLegacyFacade.buildEmptyFault(transformSoapVersion(version), context);
     }
 
-    public static String buildFault(Soap version, String code, String message, SoapContext context) {
-        return SoapLegacyFacade.buildFault(code, message, transformSoapVersion(version), context);
+    public static String buildFault(Soap version, String code, String message, String detail, SoapContext context) {
+        return SoapLegacyFacade.buildFault(code, message, detail, transformSoapVersion(version), context);
     }
 
     public static boolean isRpc(Binding binding) {

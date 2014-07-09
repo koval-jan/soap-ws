@@ -134,12 +134,22 @@ class SoapBuilderImpl implements SoapBuilder {
 
     @Override
     public String buildFault(String code, String message) {
-        return soapFacade.buildFault(code, message, binding, context);
+        return soapFacade.buildFault(code, message, null, binding, context);
     }
 
     @Override
     public String buildFault(String code, String message, SoapContext context) {
-        return soapFacade.buildFault(code, message, binding, context);
+        return soapFacade.buildFault(code, message, null, binding, context);
+    }
+
+    @Override
+    public String buildFault(String code, String message, String detail) {
+        return soapFacade.buildFault(code, message, detail, binding, context);
+    }
+
+    @Override
+    public String buildFault(String code, String message, String detail, SoapContext context) {
+        return soapFacade.buildFault(code, message, detail, binding, context);
     }
 
     @Override

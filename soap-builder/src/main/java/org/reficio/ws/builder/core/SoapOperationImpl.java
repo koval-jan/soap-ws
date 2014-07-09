@@ -141,8 +141,18 @@ class SoapOperationImpl implements SoapOperation, SoapOperationBuilder {
     }
 
     @Override
+    public String buildFault(String code, String message, String detail) {
+        return builder.buildFault(code, message, detail, context);
+    }
+
+    @Override
     public String buildFault(String code, String message, SoapContext context) {
         return builder.buildFault(code, message, context);
+    }
+
+    @Override
+    public String buildFault(String code, String message, String detail, SoapContext context) {
+        return builder.buildFault(code, message, detail, context);
     }
 
     @Override

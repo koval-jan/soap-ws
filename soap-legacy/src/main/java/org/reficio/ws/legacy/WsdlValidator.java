@@ -95,7 +95,6 @@ class WsdlValidator {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             errors.add(XmlError.forMessage(e.getMessage()));
         }
         return convertErrors(errors);

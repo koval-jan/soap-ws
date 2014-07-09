@@ -40,7 +40,11 @@ public interface SoapOperationBuilder extends SoapOperation {
 
     String buildFault(String code, String message);
 
+    String buildFault(String code, String message, String detail);
+
     String buildFault(String code, String message, SoapContext context);
+
+    String buildFault(String code, String message, String detail,  SoapContext context);
 
     String buildEmptyFault();
 

@@ -403,7 +403,6 @@ class WsdlUtils {
             try {
                 return URLDecoder.decode(soapAddress.getLocationURI(), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
                 return soapAddress.getLocationURI();
             }
         }
@@ -414,7 +413,6 @@ class WsdlUtils {
             try {
                 return URLDecoder.decode(soap12Address.getLocationURI(), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
                 return soap12Address.getLocationURI();
             }
         }

@@ -82,7 +82,15 @@ public class MessageComplianceTest {
 
     @Test
     public void testFaultSoap11() {
-        String faultSoap11 = SoapLegacyFacade.buildFault(SoapLegacyFacade.Soap.SOAP_1_1, "VersionMismatch", "Fault Message", context);
+        String faultSoap11 = SoapLegacyFacade.buildFault(SoapLegacyFacade.Soap.SOAP_1_1, "VersionMismatch", "Fault Message", null, context);
+        log.info("\n" + faultSoap11);
+        String expectedMsg = getContent("messages", "FaultVersionMismatch11.xml");
+        assertEquals(expectedMsg, faultSoap11);
+    }
+
+    @Test
+    public void testFaultSoap11Detail() {
+        String faultSoap11 = SoapLegacyFacade.buildFault(SoapLegacyFacade.Soap.SOAP_1_1, "VersionMismatch", "Fault Message", "<detail/>", context);
         log.info("\n" + faultSoap11);
         String expectedMsg = getContent("messages", "FaultVersionMismatch11.xml");
         assertEquals(expectedMsg, faultSoap11);
@@ -90,9 +98,17 @@ public class MessageComplianceTest {
 
     @Test
     public void testFaultSoap12() {
-        String faultSoap12 = SoapLegacyFacade.buildFault(SoapLegacyFacade.Soap.SOAP_1_2, "VersionMismatch", "Fault Message", context);
+        String faultSoap12 = SoapLegacyFacade.buildFault(SoapLegacyFacade.Soap.SOAP_1_2, "VersionMismatch", "Fault Message", null, context);
         log.info("\n" + faultSoap12);
         String expectedMsg = getContent("messages", "FaultVersionMismatch12.xml");
+        assertEquals(expectedMsg, faultSoap12);
+    }
+
+    @Test
+    public void testFaultSoap12Detail() {
+        String faultSoap12 = SoapLegacyFacade.buildFault(SoapLegacyFacade.Soap.SOAP_1_2, "VersionMismatch", "Fault Message", "<detail/>", context);
+        log.info("\n" + faultSoap12);
+        String expectedMsg = getContent("messages", "FaultVersionMismatch12Detail.xml");
         assertEquals(expectedMsg, faultSoap12);
     }
 

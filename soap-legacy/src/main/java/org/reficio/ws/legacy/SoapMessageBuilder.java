@@ -19,15 +19,19 @@
 package org.reficio.ws.legacy;
 
 import com.ibm.wsdl.xml.WSDLReaderImpl;
+
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.SchemaGlobalElement;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.reficio.ws.SoapBuilderException;
 import org.reficio.ws.SoapContext;
 import org.reficio.ws.annotation.ThreadSafe;
 import org.reficio.ws.common.Wsdl11Writer;
+import org.reficio.ws.legacy.XmlUtils.XPathValue;
+import org.reficio.ws.legacy.exception.SoapMessageBuilderException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -36,6 +40,7 @@ import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.wsdl.extensions.soap12.SOAP12Binding;
 import javax.wsdl.xml.WSDLReader;
 import javax.xml.namespace.QName;
+
 import java.io.File;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
@@ -185,28 +190,74 @@ class SoapMessageBuilder {
     // ----------------------------------------------------------
     // FAULT MESSAGE GENERATORS
     // ----------------------------------------------------------
-    public static String buildFault(String faultcode, String faultstring, SoapVersion soapVersion, SoapContext context) {
+    public static String buildFault(String faultcode, String faultstring, String detail, SoapVersion soapVersion, SoapContext context) {
         SampleXmlUtil generator = new SampleXmlUtil(false, context);
         generator.setTypeComment(false);
         generator.setIgnoreOptional(true);
         String emptyResponse = buildEmptyFault(generator, soapVersion, context);
         if (soapVersion == SoapVersion.Soap11) {
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//faultcode", faultcode);
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//faultstring", faultstring);
+        	XmlObject xmlObject = XmlUtils.setXPathContent(emptyResponse,
+	          		new XPathValue("//faultcode", faultcode),
+	           		new XPathValue("//faultstring", faultstring));
+        	if(detail != null && !"".equals(detail)) {
+        		XmlObject[] selectXPath = XmlUtils.selectXPath(xmlObject, "//soapenv:Fault");
+        		try {
+					XmlObject xmlDetail = XmlObject.Factory.parse(detail);
+					XmlCursor detCur = xmlDetail.newCursor();
+					detCur.toNextToken();
+
+					for(XmlObject xo : selectXPath) {
+	        			XmlCursor cur = xo.newCursor();
+	            		cur.toChild("faultstring");
+	            		cur.toEndToken();
+	            		cur.beginElement("detail");
+	            		detCur.copyXml(cur);
+	            		cur.toNextToken();
+	        		}
+				} catch (XmlException e) {
+					throw new SoapMessageBuilderException(e);
+				}
+
+    		}
+        	return xmlObject.toString();
+
         } else if (soapVersion == SoapVersion.Soap12) {
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Value", faultcode);
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Text", faultstring);
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Text/@xml:lang", "en");
+        	XmlObject xmlObject = XmlUtils.setXPathContent(emptyResponse,
+        			new XPathValue("//soap:Value", faultcode),
+        			new XPathValue("//soap:Text", faultstring),
+        			new XPathValue("//soap:Text/@xml:lang", "en"));
+        	if(detail != null && !"".equals(detail)) {
+        		XmlObject[] selectXPath = XmlUtils.selectXPath(xmlObject, "//soap:Fault");
+
+        		try {
+					XmlObject xmlDetail = XmlObject.Factory.parse(detail);
+					XmlCursor detCur = xmlDetail.newCursor();
+					detCur.toNextToken();
+
+	        		for(XmlObject xo : selectXPath) {
+	        			XmlCursor cur = xo.newCursor();
+	            		cur.toChild(new QName(soapVersion.getEnvelopeNamespace(), "Reason"));
+	            		cur.toEndToken();
+	            		cur.toNextToken();
+	            		cur.beginElement(new QName(soapVersion.getEnvelopeNamespace(), "Detail"));
+	            		detCur.copyXml(cur);
+	            		cur.toNextToken();
+	        		}
+        		} catch (XmlException e) {
+        			throw new SoapMessageBuilderException(e);
+				}
+        	}
+        	return xmlObject.toString();
         }
         return emptyResponse;
     }
 
-    public String buildFault(String faultcode, String faultstring, QName bindingQName, SoapContext context) {
-        return buildFault(faultcode, faultstring, getSoapVersion(getBindingByName(bindingQName)), context);
+    public String buildFault(String faultcode, String faultstring, String detail, QName bindingQName, SoapContext context) {
+        return buildFault(faultcode, faultstring, detail, getSoapVersion(getBindingByName(bindingQName)), context);
     }
 
-    public String buildFault(String faultcode, String faultstring, Binding binding, SoapContext context) {
-        return buildFault(faultcode, faultstring, getSoapVersion(binding), context);
+    public String buildFault(String faultcode, String faultstring, String detail, Binding binding, SoapContext context) {
+        return buildFault(faultcode, faultstring, detail, getSoapVersion(binding), context);
     }
 
     public String buildEmptyFault(QName bindingQName, SoapContext context) {
@@ -266,7 +317,6 @@ class SoapMessageBuilder {
             XmlUtils.serializePretty(object, writer);
             return writer.toString();
         } catch (Exception e) {
-            e.printStackTrace();
             return object.xmlText();
         }
     }
